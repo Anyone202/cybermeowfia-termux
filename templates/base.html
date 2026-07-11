@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+<title>{% block title %}CyberMeowfia · Termux Root Manager{% endblock %}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='52' font-size='52'%3E%F0%9F%90%B1%3C/text%3E%3C/svg%3E">
+</head>
+<body class="{% block body_class %}{% endblock %}">
+
+{% block nav %}
+{% if session.get('admin') %}
+<nav class="topbar">
+  <div class="brand">
+    <span class="logo">🐱</span>
+    <span class="name">CyberMeowfia</span>
+    <span class="tag">Termux Root Manager</span>
+  </div>
+  <ul class="menu">
+    <li><a href="{{ url_for('dashboard') }}" class="active" data-tab="tab-dash">仪表盘</a></li>
+    <li><a href="#tab-escalate" data-tab="tab-escalate">提权</a></li>
+    <li><a href="#tab-apps" data-tab="tab-apps">授权</a></li>
+    <li><a href="#tab-modules" data-tab="tab-modules">模块</a></li>
+    <li><a href="#tab-hide" data-tab="tab-hide">隐藏</a></li>
+    <li><a href="#tab-processes" data-tab="tab-processes">进程</a></li>
+    <li><a href="#tab-fs" data-tab="tab-fs">文件</a></li>
+    <li class="sep"></li>
+    <li><a href="{{ url_for('logout') }}" class="danger">退出</a></li>
+  </ul>
+</nav>
+{% endif %}
+{% endblock %}
+
+<main class="{% block main_class %}{% endblock %}">
+  {% block content %}{% endblock %}
+</main>
+
+<div id="toast"></div>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

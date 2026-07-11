@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}登录 · CyberMeowfia{% endblock %}
+{% block body_class %}login-page{% endblock %}
+{% block content %}
+<div class="login-box">
+  <div class="login-card">
+    <div class="big-logo">🐱</div>
+    <h1>CyberMeowfia</h1>
+    <p class="muted">Termux Root Manager</p>
+    <form method="post" action="{{ url_for('login_page') }}">
+      <input type="password" name="password" placeholder="管理员口令"
+             autocomplete="current-password" autofocus required />
+      {% if err %}<div class="err">{{ err }}</div>{% endif %}
+      <button type="submit">登录</button>
+    </form>
+    <p class="hint">首次启动时口令会打印到 Termux stdout,亦可设置环境变量 <code>CMF_ADMIN_PASS</code> 覆盖</p>
+  </div>
+</div>
+{% endblock %}
