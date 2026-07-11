@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}提权 · CyberMeowfia{% endblock %}
+{% block content %}
+<div class="escalate-wrap">
+  <h2>提权链接</h2>
+  <p class="muted">
+    链接基于 CVE-2026-43501(Route of Root)内核漏洞利用,
+    含 HMAC 签名与 {{ escalation.ttl if escalation else 900 }} 秒有效期。
+  </p>
+
+  <div class="card">
+    {% if escalation %}
+      <div class="kv">
+        <div class="k">链接</div>
+        <div class="v mono">
+          <input id="escUrl" value="{{ escalation.url }}" readonly />
+          <button onclick="copyText('escUrl')">复制</button>
+          <a class="btn primary" href="{{ escalation.url }}">立即打开</a>
+        </div>
+      </div>
+      <div class="kv">
+        <div class="k">剩余有效期</div>
+        <div class="v" id="escTtl">{{ escalation.ttl }}s</div>
+      </div>
+      <div class="kv">
+        <div class="k">Token</div>
+        <div class="v mono small">{{ escalation.token }}</div>
+      </div>
+      <div class="actions">
+        <button class="danger" onclick="regenLink()">作废并重新生成</button>
+      </div>
+    {% else %}
+      <p class="muted">当前没有可用的提权链接。</p>
+      <button class="primary" onclick="regenLink()">生成新链接</button>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <h3>实时提权状态</h3>
+    <div id="exploitState">读取中...</div>
+    <pre id="exploitLog" class="logbox"></pre>
+  </div>
+</div>
+
+{# 通过 data-* 把服务端变量安全地传给 JS,避开 Jinja2 模板语法在 JS 上下文里引发的解析误报 #}
+<script id="escConfig" type="application/json"
+        data-ttl="{{ escalation.ttl if escalation else 0 }}"></script>
+{% endblock %}
+{% block scripts %}
+<script>
+(function() {
+  const cfg = document.getElementById('escConfig');
+  let escTtl = parseInt(cfg ? cfg.dataset.ttl : '0', 10) || 0;
+  const ttlEl = document.getElementById('escTtl');
+  setInterval(() => {
+    if (escTtl > 0) {
+      escTtl -= 1;
+      if (ttlEl) ttlEl.textContent = escTtl + 's';
+    }
+  }, 1000);
+
+  window.regenLink = async function() {
+    if (!confirm('作废当前提权链接并生成新的?')) return;
+    const r = await fetch('/api/escalate/link', {method: 'POST', credentials: 'same-origin'});
+    const j = await r.json();
+    if (j.ok) location.reload();
+    else alert('失败:' + j.error);
+  };
+
+  async function pollExploit() {
+    try {
+      const r = await fetch('/api/exploit/status', {credentials: 'same-origin'});
+      const j = await r.json();
+      if (!j || !j.ok) return;
+      const s = j.exploit, root = j.root;
+      const el = document.getElementById('exploitState');
+      if (!el) return;
+      const parts = [];
+      parts.push('exploit 状态: <b>' + s.state + '</b>,已运行 ' + s.elapsed.toFixed(1) + 's');
+      parts.push('当前 uid=' + root.uid + ', euid=' + root.euid
+                 + ', is_root=' + root.is_root + ', su_works=' + root.su_works);
+      parts.push('su 路径: <code>' + (root.su_path || '未找到') + '</code>');
+      el.innerHTML = parts.join('<br>');
+    } catch (e) { /* ignore */ }
+  }
+  setInterval(pollExploit, 2000);
+  pollExploit();
+})();
+</script>
+{% endblock %}
