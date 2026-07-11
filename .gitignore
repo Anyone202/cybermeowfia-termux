@@ -1,0 +1,27 @@
+# 运行时敏感数据
+logs/
+*.token
+*.secret
+*.key
+
+# Python 缓存
+__pycache__/
+*.pyc
+*.pyo
+
+# 上游 submodule (不含源码)
+exploits/CVE-2026-43501/kernel-research/
+
+# 大型二进制文件
+*.apk
+*.kxdb
+target_db*
+
+# IDE 内部目录
+.trae/
+
+# 临时文件
+*.tmp
+*.log
+*.pid
+as.txt
